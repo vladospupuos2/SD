@@ -97,8 +97,6 @@ namespace SD.Code.Decompile
 
                 //Console.ReadKey(true);
                 id = Convert.ToInt32(j);
-                string query = "SELECT Data FROM Content WHERE ID = @id";
-
 
                 // Searching Path
                 int ContentId = id;
@@ -174,7 +172,7 @@ namespace SD.Code.Decompile
 
 
                 // Decompiler the file
-                using (SqliteCommand command = new SqliteCommand(query, connection))
+                using (SqliteCommand command = new("SELECT Data FROM Content WHERE ID = @id", connection))
                 {
                     command.Parameters.AddWithValue("@id", id);
 
