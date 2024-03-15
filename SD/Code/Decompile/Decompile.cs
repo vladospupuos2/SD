@@ -240,6 +240,9 @@ namespace SD.Code.Decompile
             }
 
             Directory.Delete("temp", true);
+
+            Console.WriteLine("Press any key...");
+            Console.ReadKey(true);
         }
 
         /// <summary>
