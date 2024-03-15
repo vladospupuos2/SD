@@ -29,6 +29,7 @@ namespace SD.Code.Decompile
             using SqliteConnection connection = new($"Data Source={connectionString}");
             connection.Open();
 
+            #region TODO. Maybe
             // Build counts
             // Maybe i fix this, but not today :)
             /*
@@ -37,10 +38,7 @@ namespace SD.Code.Decompile
                 buildcount = (long)command.ExecuteScalar();
                 Console.WriteLine("Version Count: " + buildcount);
             }
-            */
 
-            #region TODO. Maybe
-            /*
             //Build Lists
 
             string adrBuilds = "SELECT ForkId FROM ContentVersion";
