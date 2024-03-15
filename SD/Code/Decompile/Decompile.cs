@@ -85,33 +85,7 @@ namespace SD.Code.Decompile
             */
             #endregion
 
-            // ID counter
-            long maxID = 0;
-            long minID = 0;
-
-            using (var command = new SqliteCommand("SELECT MAX(ContentId) FROM ContentManifest", connection))
-            {
-
-                var res = command.ExecuteScalar();
-
-                if (res != DBNull.Value)
-                {
-                    maxID = Convert.ToInt64(res);
-                }
-
-            }
-
-            using (var command = new SqliteCommand("SELECT MIN(ContentId) FROM ContentManifest", connection))
-            {
-
-                var res = command.ExecuteScalar();
-
-                if (res != DBNull.Value)
-                {
-                    minID = Convert.ToInt64(res);
-                }
-
-            }
+            GetMaxMin(connection, out var maxID, out var minID);
 
             int maxID_ = (int)maxID;
             int minID_ = (int)minID;
@@ -285,6 +259,34 @@ namespace SD.Code.Decompile
 
             if (!Directory.Exists("temp"))
                 Directory.CreateDirectory("temp");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="MaxID"></param>
+        /// <param name="MinID"></param>
+        private static void GetMaxMin(SqliteConnection connection, out long MaxID, out long MinID)
+        {
+            MaxID = long.MinValue;
+            MinID = long.MaxValue;
+
+            using (var command = new SqliteCommand("SELECT MAX(ContentId) FROM ContentManifest", connection))
+            {
+                var res = command.ExecuteScalar();
+
+                if (res != DBNull.Value)
+                    MaxID = Convert.ToInt64(res);
+            }
+
+            using (var command = new SqliteCommand("SELECT MIN(ContentId) FROM ContentManifest", connection))
+            {
+                var res = command.ExecuteScalar();
+
+                if (res != DBNull.Value)
+                    MinID = Convert.ToInt64(res);
+            }
         }
     }
 }
