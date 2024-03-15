@@ -1,5 +1,5 @@
-######  RU:
 # Syndi-Decoder 1.1.2
+######  RU:
 
 >Программа написана Vladospupuos!
 >Я не несу ответственность за использование программы во вред другим проектам!
@@ -14,15 +14,9 @@
 3) Заходим в программу SD.exe и вводим пункт 1.
 4) Смотрим на результат, и если всё успешно, нажимаем любую клавишу и выходим из программы.
 5) В папке "Decoded" будут ждать файлы
-
-
 ___
 
-
 ###### ENG:
-
-# Syndi-Decoder 1.1
-
 
 >The program was written by Vladospupuos!
 >I am not responsible for using the program to the detriment of other projects!
