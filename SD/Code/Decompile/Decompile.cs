@@ -15,11 +15,8 @@ namespace SD.Code.Decompile
         public static void Run()
         {
             string path = string.Empty;
-            long buildcount = 1;
             int id;
-            int compressionLevel = 0;
-            string format = string.Empty;
-            string launcher = "launcher-skyedra";
+            string launcher = "launcher-skyedra"; // TODO - Make a launcher selection menu.
 
             string connectionString = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Space Station 14", launcher, "content.db");
 
@@ -29,6 +26,7 @@ namespace SD.Code.Decompile
             using SqliteConnection connection = new($"Data Source={connectionString}");
             connection.Open();
 
+            #region TODO. Maybe
             // Build counts
             // Maybe i fix this, but not today :)
             /*
@@ -37,10 +35,7 @@ namespace SD.Code.Decompile
                 buildcount = (long)command.ExecuteScalar();
                 Console.WriteLine("Version Count: " + buildcount);
             }
-            */
 
-            #region TODO. Maybe
-            /*
             //Build Lists
 
             string adrBuilds = "SELECT ForkId FROM ContentVersion";
@@ -85,48 +80,19 @@ namespace SD.Code.Decompile
             */
             #endregion
 
-            // ID counter
-            long maxID = 0;
-            long minID = 0;
-
-            using (var command = new SqliteCommand("SELECT MAX(ContentId) FROM ContentManifest", connection))
-            {
-
-                var res = command.ExecuteScalar();
-
-                if (res != DBNull.Value)
-                {
-                    maxID = Convert.ToInt64(res);
-                }
-
-            }
-
-            using (var command = new SqliteCommand("SELECT MIN(ContentId) FROM ContentManifest", connection))
-            {
-
-                var res = command.ExecuteScalar();
-
-                if (res != DBNull.Value)
-                {
-                    minID = Convert.ToInt64(res);
-                }
-
-            }
+            GetMaxMin(connection, out var maxID, out var minID);
 
             int maxID_ = (int)maxID;
             int minID_ = (int)minID;
 
             for (int j = minID_; j < maxID_ + 1; j++)
             {
-
                 double progress = ((double)j - minID_) / maxID_ * 100;
 
                 Console.WriteLine($"Progress: {progress:0.00}%");
 
                 //Console.ReadKey(true);
                 id = Convert.ToInt32(j);
-                string query = "SELECT Data FROM Content WHERE ID = @id";
-
 
                 // Searching Path
                 int ContentId = id;
@@ -134,9 +100,7 @@ namespace SD.Code.Decompile
                 SqliteCommand commandPath = new("SELECT Path FROM ContentManifest WHERE ContentId = @ContentId", connection);
                 commandPath.Parameters.AddWithValue("@ContentId", ContentId);
 
-
-
-                // Scaning
+                // Scanning
                 using (SqliteDataReader reader = commandPath.ExecuteReader())
                 {
                     if (reader.Read())
@@ -150,8 +114,6 @@ namespace SD.Code.Decompile
                     }
                     reader.Close();
                 }
-
-
 
                 string temp = path;
 
@@ -198,18 +160,17 @@ namespace SD.Code.Decompile
                 }
 
                 int index = temp.LastIndexOf('.');
-                format = temp.Substring(index + 1);
+                string format = temp.Substring(index + 1);
 
 
-                // Decompiler the file
-                using (SqliteCommand command = new SqliteCommand(query, connection))
+                // Decompile the file
+                using (SqliteCommand command = new("SELECT Data FROM Content WHERE ID = @id", connection))
                 {
                     command.Parameters.AddWithValue("@id", id);
 
                     string compressionLevel_ = string.Empty;
 
-                    string compspace_ = "SELECT Compression FROM Content WHERE ID = @id";
-                    SqliteCommand commandPath2 = new SqliteCommand(compspace_, connection);
+                    SqliteCommand commandPath2 = new("SELECT Compression FROM Content WHERE ID = @id", connection);
                     commandPath2.Parameters.AddWithValue("@id", id);
 
                     using (SqliteDataReader reader = commandPath2.ExecuteReader())
@@ -217,14 +178,19 @@ namespace SD.Code.Decompile
                         if (reader.Read())
                         {
                             compressionLevel_ = reader.GetString(0);
-
                         }
                         reader.Close();
                     }
+
+                    int compressionLevel;
                     if (compressionLevel_ == string.Empty || compressionLevel_ == "0")
+                    {
                         compressionLevel = 0;
+                    }
                     else
+                    {
                         compressionLevel = Convert.ToInt32(compressionLevel_);
+                    }
 
 
                     using (SqliteDataReader reader = command.ExecuteReader())
@@ -236,9 +202,10 @@ namespace SD.Code.Decompile
                             {
                                 byte[] data = (byte[])reader["Data"];
                                 string fileName = $"Decoded\\{result_}\\{result}";
+                                
                                 // Save
                                 File.WriteAllBytes(fileName, data);
-                                //Console.WriteLine($"Succesful Blob to " + result);
+                                //Console.WriteLine($"Successful Blob to " + result);
                             }
                             else                                                        // 0 < dec
                             {
@@ -260,7 +227,7 @@ namespace SD.Code.Decompile
                                 }
 
                                 Directory.Move($"temp\\{result}", $"Decoded\\{result_}\\{result}");
-                                //Console.WriteLine($"Succesful Blob to {result}");
+                                //Console.WriteLine($"Successful Blob to {result}");
                             }
                         }
                         else
@@ -273,6 +240,9 @@ namespace SD.Code.Decompile
             }
 
             Directory.Delete("temp", true);
+
+            Console.WriteLine("Press any key...");
+            Console.ReadKey(true);
         }
 
         /// <summary>
@@ -285,6 +255,34 @@ namespace SD.Code.Decompile
 
             if (!Directory.Exists("temp"))
                 Directory.CreateDirectory("temp");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="MaxID"></param>
+        /// <param name="MinID"></param>
+        private static void GetMaxMin(SqliteConnection connection, out long MaxID, out long MinID)
+        {
+            MaxID = long.MinValue;
+            MinID = long.MaxValue;
+
+            using (var command = new SqliteCommand("SELECT MAX(ContentId) FROM ContentManifest", connection))
+            {
+                var res = command.ExecuteScalar();
+
+                if (res != DBNull.Value)
+                    MaxID = Convert.ToInt64(res);
+            }
+
+            using (var command = new SqliteCommand("SELECT MIN(ContentId) FROM ContentManifest", connection))
+            {
+                var res = command.ExecuteScalar();
+
+                if (res != DBNull.Value)
+                    MinID = Convert.ToInt64(res);
+            }
         }
     }
 }

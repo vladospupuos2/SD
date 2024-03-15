@@ -1,5 +1,6 @@
 ﻿using SD.Code.Compiler;
 using SD.Code.Decompile;
+using System;
 
 class Program
 {
@@ -14,26 +15,27 @@ class Program
             Console.WriteLine("1) Decompile build");
             Console.WriteLine("2) Compiler");
             Console.WriteLine("0) Exit");
-            ConsoleKey key;
-            key = Console.ReadKey().Key;
-            int choice = Convert.ToInt32(key);
+
+            ConsoleKeyInfo key = Console.ReadKey();
+
+            int choice = -1;
+            if (char.IsDigit(key.KeyChar))
+                choice = int.Parse(key.KeyChar.ToString());
+
             Console.WriteLine();
             switch (choice)
             {
-                case 49:
+                case 1:
                     Decompile.Run();
                     break;
 
-                case 50:
+                case 2:
                     Compiler.Run();
                     break;
 
-                case 48:
+                case 0:
                     return;
             }
-
-            Console.WriteLine("Press any key...");
-            Console.ReadKey(true);
         }
     }
 }
