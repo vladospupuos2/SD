@@ -11,12 +11,9 @@
 ## Инструкция 
 1) Для более удобной работы, удалите весь серверный контент из лаунчера
 2) Зайдите на сервер, и как вы загрузитесь в меню, можете выйти
-3) Чтобы воспользоваться программой вам нужно перенести файл:
-C:\Users\*Имя пользователя*\AppData\Local\Space Station 14\*Ваш лаунчер*\content.db
-в папку с программой.
-4) Заходим в программу SD.exe и вводим пункт 1.
-5) Смотрим на результат, и если всё успешно, нажимаем любую клавишу и выходим из программы.
-6) В папке "Decoded" будут ждать файлы
+3) Заходим в программу SD.exe и вводим пункт 1.
+4) Смотрим на результат, и если всё успешно, нажимаем любую клавишу и выходим из программы.
+5) В папке "Decoded" будут ждать файлы
 
 
 ___
@@ -37,10 +34,7 @@ ___
 ## Instructions
 1) For a more convenient experience, remove all server content from the launcher
 2) Login to the server, and once you have loaded into the menu, you can exit
-3) To use the program you need to transfer the file:
-C:\Users\*Username*\AppData\Local\Space Station 14\*Your launcher*\content.db
-to the program folder.
-4) Go to the SD.exe program and enter point 1.
-5) We look at the result, and if everything is successful, press any key and exit the program.
-6) Files will be waiting in the “Decoded” folder
+3) Go to the SD.exe program and enter point 1.
+4) We look at the result, and if everything is successful, press any key and exit the program.
+5) Files will be waiting in the “Decoded” folder
 
