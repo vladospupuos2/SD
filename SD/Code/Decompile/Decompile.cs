@@ -15,11 +15,8 @@ namespace SD.Code.Decompile
         public static void Run()
         {
             string path = string.Empty;
-            long buildcount = 1;
             int id;
-            int compressionLevel = 0;
-            string format = string.Empty;
-            string launcher = "launcher-skyedra";
+            string launcher = "launcher-skyedra"; // TODO - Make a launcher selection menu.
 
             string connectionString = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Space Station 14", launcher, "content.db");
 
@@ -90,7 +87,6 @@ namespace SD.Code.Decompile
 
             for (int j = minID_; j < maxID_ + 1; j++)
             {
-
                 double progress = ((double)j - minID_) / maxID_ * 100;
 
                 Console.WriteLine($"Progress: {progress:0.00}%");
@@ -104,9 +100,7 @@ namespace SD.Code.Decompile
                 SqliteCommand commandPath = new("SELECT Path FROM ContentManifest WHERE ContentId = @ContentId", connection);
                 commandPath.Parameters.AddWithValue("@ContentId", ContentId);
 
-
-
-                // Scaning
+                // Scanning
                 using (SqliteDataReader reader = commandPath.ExecuteReader())
                 {
                     if (reader.Read())
@@ -120,8 +114,6 @@ namespace SD.Code.Decompile
                     }
                     reader.Close();
                 }
-
-
 
                 string temp = path;
 
@@ -168,18 +160,17 @@ namespace SD.Code.Decompile
                 }
 
                 int index = temp.LastIndexOf('.');
-                format = temp.Substring(index + 1);
+                string format = temp.Substring(index + 1);
 
 
-                // Decompiler the file
+                // Decompile the file
                 using (SqliteCommand command = new("SELECT Data FROM Content WHERE ID = @id", connection))
                 {
                     command.Parameters.AddWithValue("@id", id);
 
                     string compressionLevel_ = string.Empty;
 
-                    string compspace_ = "SELECT Compression FROM Content WHERE ID = @id";
-                    SqliteCommand commandPath2 = new SqliteCommand(compspace_, connection);
+                    SqliteCommand commandPath2 = new("SELECT Compression FROM Content WHERE ID = @id", connection);
                     commandPath2.Parameters.AddWithValue("@id", id);
 
                     using (SqliteDataReader reader = commandPath2.ExecuteReader())
@@ -187,14 +178,19 @@ namespace SD.Code.Decompile
                         if (reader.Read())
                         {
                             compressionLevel_ = reader.GetString(0);
-
                         }
                         reader.Close();
                     }
+
+                    int compressionLevel;
                     if (compressionLevel_ == string.Empty || compressionLevel_ == "0")
+                    {
                         compressionLevel = 0;
+                    }
                     else
+                    {
                         compressionLevel = Convert.ToInt32(compressionLevel_);
+                    }
 
 
                     using (SqliteDataReader reader = command.ExecuteReader())
@@ -206,9 +202,10 @@ namespace SD.Code.Decompile
                             {
                                 byte[] data = (byte[])reader["Data"];
                                 string fileName = $"Decoded\\{result_}\\{result}";
+                                
                                 // Save
                                 File.WriteAllBytes(fileName, data);
-                                //Console.WriteLine($"Succesful Blob to " + result);
+                                //Console.WriteLine($"Successful Blob to " + result);
                             }
                             else                                                        // 0 < dec
                             {
@@ -230,7 +227,7 @@ namespace SD.Code.Decompile
                                 }
 
                                 Directory.Move($"temp\\{result}", $"Decoded\\{result_}\\{result}");
-                                //Console.WriteLine($"Succesful Blob to {result}");
+                                //Console.WriteLine($"Successful Blob to {result}");
                             }
                         }
                         else
