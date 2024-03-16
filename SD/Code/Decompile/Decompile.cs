@@ -85,12 +85,11 @@ class Decompile
 
             int maxID_ = (int)maxID;
             int minID_ = (int)minID;
+            int numberOfId = maxID_ - minID_;
 
             for (int j = minID_; j < maxID_ + 1; j++)
             {
-                double progress = ((double)j - minID_) / maxID_ * 100;
-
-                Console.WriteLine($"Progress: {progress:0.00}%");
+                Console.WriteLine($"Progress: {(double)((j - minID_)/(numberOfId) *100):0.00}%");
 
                 //Console.ReadKey(true);
                 id = Convert.ToInt32(j);
@@ -208,7 +207,7 @@ class Decompile
                                 File.WriteAllBytes(fileName, data);
                                 //Console.WriteLine($"Successful Blob to " + result);
                             }
-                            else                                                        // 0 < dec
+                            else // 0 < dec
                             {
                                 byte[] blobData = (byte[])reader["Data"];
 
