@@ -187,7 +187,7 @@ namespace SD.Code.Decompile
                     int i;
                     int count = 0;
 
-                    for (i = result_.Length - 1; i != 0; i--)
+                    for (i = result_.Length - 1; i != -1; i--)
                     {
                         char c = result_[i];
                         if (c == '/')
