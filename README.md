@@ -22,7 +22,7 @@ ___
 
 ###### ENG:
 
->The program was written by Vladospupuos!
+>The program was written by Vladospupuos and NekoDar!
 >We am not responsible for using the program to the detriment of other projects!
 >The program is for informational purposes only!
 >Space Station 14 is a remake of SS13, which runs on its own Robust Toolbox engine,
