@@ -145,8 +145,6 @@ namespace SD.Code.Decompile
             for(int build = 1; build < buildsList.Count + 1; build++)
             {
                 GetMaxMin(connection, out var maxID, out var minID, build);
-                Console.WriteLine( $"min - {minID} max - {maxID}");
-                Console.ReadKey(true);
 
                 int maxID_ = (int)maxID;
                 int minID_ = (int)minID;
