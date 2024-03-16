@@ -11,7 +11,10 @@ class Compiler
     /// </summary>
     public static void Run()
     {
-        Console.WriteLine("WORK IN PROGRESS");
+        Console.WriteLine("WORK IN PROGRESS!");
+
+        Console.WriteLine("Press any key...");
+        Console.ReadKey(true);
         return;
     }
 }
