@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 
-namespace SD.Code.Decompile
+namespace SD.Code.Decompile;
+class Decompile
 {
     /// <summary>
     /// Constructor for the Decompile class.
@@ -20,8 +21,10 @@ namespace SD.Code.Decompile
 
         CreateDirs();
 
-            // Open File
-            using SqliteConnection connection = new($"Data Source={connectionString}");
+        // Open File
+        using SqliteConnection connection = new($"Data Source={connectionString}");
+        try
+        {
             connection.Open();
 
             #region TODO. Maybe
@@ -236,6 +239,12 @@ namespace SD.Code.Decompile
                     }
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR! Error massage: \"{ex.Message}\"");
+        }
+        Directory.Delete("temp", true);
 
         Console.WriteLine("Press any key...");
         Console.ReadKey(true);
