@@ -69,11 +69,7 @@ namespace SD.Code.Decompile
             long tempCount = 0;
             try
             {
-                using (SqliteCommand command = new("SELECT MAX(Id) FROM ContentVersion", connection))
-                {
-                    tempCount = (long)command.ExecuteScalar();
-                    Console.WriteLine("Version Count: " + tempCount);
-                }
+
             }
             catch (Exception ex)
             {
@@ -86,6 +82,7 @@ namespace SD.Code.Decompile
             //Build Lists
 
             List<string> buildsList = new List<string>();
+            List<string> buildId = new List<string>();
             string adrBuilds = "SELECT ForkId FROM ContentVersion";
 
             // This is support for Multi-launchers and versions
@@ -98,6 +95,20 @@ namespace SD.Code.Decompile
                 while (reader.Read())
                 {
                     buildsList.Add(reader["ForkId"].ToString());
+
+                }
+
+                reader.Close();
+            }
+
+            using (SqliteCommand command = new SqliteCommand("SELECT Id FROM ContentVersion", connection))
+            {
+                SqliteDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    buildId.Add(reader["Id"].ToString());
+
                 }
 
                 reader.Close();
@@ -129,8 +140,8 @@ namespace SD.Code.Decompile
                 }
             }
             Console.WriteLine($"Founded {buildsList.Count} build" + (buildcount == 1 ? " " : "s"));
-            foreach (var build in buildsList)
-                Console.WriteLine(build);
+                for(int i = 0; i < buildsList.Count; i++)
+                    Console.WriteLine(buildsList[i] + buildId[i]);
 
             /*            for(int build = 0; build < buildsList.Count; build++)
                         {
@@ -144,7 +155,7 @@ namespace SD.Code.Decompile
 
             for(int build = 1; build < buildsList.Count + 1; build++)
             {
-                GetMaxMin(connection, out var maxID, out var minID, build);
+                GetMaxMin(connection, out var maxID, out var minID, Convert.ToInt32(buildId[build - 1]));
 
                 int maxID_ = (int)maxID;
                 int minID_ = (int)minID;
@@ -163,7 +174,7 @@ namespace SD.Code.Decompile
 
                     SqliteCommand commandPath = new("SELECT Path FROM ContentManifest WHERE ContentId = @ContentId AND VersionId = @VersionId", connection);
                     commandPath.Parameters.AddWithValue("@ContentId", ContentId);
-                    commandPath.Parameters.AddWithValue("@VersionId", build);
+                    commandPath.Parameters.AddWithValue("@VersionId", Convert.ToInt32(buildId[build-1]));
 
                     // Scanning
                     using (SqliteDataReader reader = commandPath.ExecuteReader())
