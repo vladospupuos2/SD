@@ -2,25 +2,23 @@ using Microsoft.Data.Sqlite;
 
 namespace SD.Code.Decompile
 {
-    class Decompile
+    /// <summary>
+    /// Constructor for the Decompile class.
+    /// </summary>
+    public Decompile() { }
+
+    /// <summary>
+    /// Executes the decompilation process.
+    /// </summary>
+    public static void Run()
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        public Decompile() { }
+        string path = string.Empty;
+        int id;
+        string launcher = "launcher-skyedra"; // TODO - Make a launcher selection menu.
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Run()
-        {
-            string path = string.Empty;
-            int id;
-            string launcher = "launcher-skyedra"; // TODO - Make a launcher selection menu.
+        string connectionString = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Space Station 14", launcher, "content.db");
 
-            string connectionString = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Space Station 14", launcher, "content.db");
-
-            CreateDirs();
+        CreateDirs();
 
             // Open File
             using SqliteConnection connection = new($"Data Source={connectionString}");
@@ -202,7 +200,7 @@ namespace SD.Code.Decompile
                             {
                                 byte[] data = (byte[])reader["Data"];
                                 string fileName = $"Decoded\\{result_}\\{result}";
-                                
+
                                 // Save
                                 File.WriteAllBytes(fileName, data);
                                 //Console.WriteLine($"Successful Blob to " + result);
@@ -239,50 +237,49 @@ namespace SD.Code.Decompile
                 }
             }
 
-            Directory.Delete("temp", true);
+        Console.WriteLine("Press any key...");
+        Console.ReadKey(true);
 
-            Console.WriteLine("Press any key...");
-            Console.ReadKey(true);
+        return;
+    }
+
+    /// <summary>
+    /// Creates necessary directories for operation.
+    /// </summary>
+    private static void CreateDirs()
+    {
+        if (!Directory.Exists("Decoded"))
+            Directory.CreateDirectory("Decoded");
+
+        if (!Directory.Exists("temp"))
+            Directory.CreateDirectory("temp");
+    }
+
+    /// <summary>
+    /// Retrieves the maximum and minimum ID values from the database.
+    /// </summary>
+    /// <param name="connection">SQLite database connection.</param>
+    /// <param name="MaxID">Maximum ID value.</param>
+    /// <param name="MinID">Minimum ID value.</param>
+    private static void GetMaxMin(SqliteConnection connection, out long MaxID, out long MinID)
+    {
+        MaxID = long.MinValue;
+        MinID = long.MaxValue;
+
+        using (var command = new SqliteCommand("SELECT MAX(ContentId) FROM ContentManifest", connection))
+        {
+            var res = command.ExecuteScalar();
+
+            if (res != DBNull.Value)
+                MaxID = Convert.ToInt64(res);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void CreateDirs()
+        using (var command = new SqliteCommand("SELECT MIN(ContentId) FROM ContentManifest", connection))
         {
-            if (!Directory.Exists("Decoded"))
-                Directory.CreateDirectory("Decoded");
+            var res = command.ExecuteScalar();
 
-            if (!Directory.Exists("temp"))
-                Directory.CreateDirectory("temp");
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="connection"></param>
-        /// <param name="MaxID"></param>
-        /// <param name="MinID"></param>
-        private static void GetMaxMin(SqliteConnection connection, out long MaxID, out long MinID)
-        {
-            MaxID = long.MinValue;
-            MinID = long.MaxValue;
-
-            using (var command = new SqliteCommand("SELECT MAX(ContentId) FROM ContentManifest", connection))
-            {
-                var res = command.ExecuteScalar();
-
-                if (res != DBNull.Value)
-                    MaxID = Convert.ToInt64(res);
-            }
-
-            using (var command = new SqliteCommand("SELECT MIN(ContentId) FROM ContentManifest", connection))
-            {
-                var res = command.ExecuteScalar();
-
-                if (res != DBNull.Value)
-                    MinID = Convert.ToInt64(res);
-            }
+            if (res != DBNull.Value)
+                MinID = Convert.ToInt64(res);
         }
     }
 }
