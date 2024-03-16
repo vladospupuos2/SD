@@ -11,7 +11,7 @@
 ## Инструкция 
 1) Для более удобной работы, удалите весь серверный контент из лаунчера
 2) Зайдите на сервер, и как вы загрузитесь в меню, можете выйти
-(Данные 2 пункта не является более обязательными, но для отзывчивой работы программы, я всё же рекомендую их сделать)
+Данные 2 пункта не является более обязательными, но для отзывчивой работы программы, я всё же рекомендую их сделать
 3) Заходим в программу SD.exe и вводим пункт 1.
 4) Выбираем из какого лаунчера будем доставать файлы.
 5) Смотрим на результат, и если всё успешно, нажимаем любую клавишу и выходим из программы.
@@ -30,7 +30,7 @@ ___
 ## Instructions
 1) For a more convenient experience, remove all server content from the launcher
 2) Login to the server, and once you have loaded into the menu, you can exit
-(These 2 points are no longer mandatory, but for responsive operation of the program, I still recommend doing them)
+These 2 points are no longer mandatory, but for responsive operation of the program, I still recommend doing them
 3) Go to the SD.exe program and enter point 1.
 4) Select from which launcher we will get the files.
 5) We look at the result, and if everything is successful, press any key and exit the program.
