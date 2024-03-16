@@ -1,368 +1,295 @@
 using Microsoft.Data.Sqlite;
-using System.Linq;
-using System.Security.Cryptography;
 
-namespace SD.Code.Decompile
+namespace SD.Code.Decompile;
+class Decompile
 {
+    /// <summary>
+    /// Constructor for the Decompile class.
+    /// </summary>
+    public Decompile() { }
 
-    class Decompile
+    /// <summary>
+    /// Executes the decompilation process.
+    /// </summary>
+    public static void Run()
     {
+        string path = string.Empty;
+        int id;
+        string launcher = "launcher-skyedra"; // TODO - Make a launcher selection menu.
 
+        string connectionString = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Space Station 14", launcher, "content.db");
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public Decompile() { }
+        CreateDirs();
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Run()
+        // Open File
+        using SqliteConnection connection = new($"Data Source={connectionString}");
+        try
         {
-            int id;
-
-            // Seacrhing Path
-            // Nah, maybe i rework this, but its wokring
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Space Station 14");
-            string[] folders = Directory.GetDirectories(path);
-            Console.WriteLine("Choose launcher");
-            int countFolders = 1;
-            foreach (string folder in folders)
-            {
-                var temp = string.Empty;
-                for (int i = folder.Length - 1; i > 0; i--)
-                {
-                    if (folder[i] == '\\')
-                        break;
-                    temp += folder[i];
-                }
-                temp = Reverse(temp);
-
-                Console.WriteLine($"{countFolders}) {temp}");
-                countFolders++;
-            }
-
-            ConsoleKeyInfo launcherChoice;
-            int choice = -1;
-            do
-            {
-                launcherChoice = Console.ReadKey(true);
-
-                if (char.IsDigit(launcherChoice.KeyChar))
-                    choice = int.Parse(launcherChoice.KeyChar.ToString());
-            }
-            while (choice <= 0 || choice >= countFolders);
-
-
-
-            string launcher = folders[choice - 1];
-
-            string connectionString = Path.Combine(path, launcher, "content.db");
-
-            CreateDirs();
-
-            // Open File
-            using SqliteConnection connection = new($"Data Source={connectionString}");
             connection.Open();
 
+            #region TODO. Maybe
+            // Build counts
             // Maybe i fix this, but not today :)
-            long tempCount = 0;
-            try
+            /*
+            using (SqliteCommand command = new("SELECT MAX(Id) FROM ContentVersion", connection))
             {
-                using (SqliteCommand command = new("SELECT MAX(Id) FROM ContentVersion", connection))
-                {
-                    tempCount = (long)command.ExecuteScalar();
-                    Console.WriteLine("Version Count: " + tempCount);
-                }
+                buildcount = (long)command.ExecuteScalar();
+                Console.WriteLine("Version Count: " + buildcount);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"\n{ex.Message}\nReturning to main menu.\nPress any key...");
-                Console.ReadKey();
-                return;
-            }
-            int buildcount = Convert.ToInt32(tempCount);
 
             //Build Lists
 
-            List<string> buildsList = new List<string>();
             string adrBuilds = "SELECT ForkId FROM ContentVersion";
 
-            // This is support for Multi-launchers and versions
-            // Because this shit try to find table which CAN exist and CAN'T
+                                        using (SqliteCommand command = new SqliteCommand(adrBuilds, connection))
+                                        {
+                                            SqliteDataReader reader = command.ExecuteReader();
 
-            using (SqliteCommand command = new SqliteCommand(adrBuilds, connection))
+                                            while (reader.Read())
+                                            {
+                                                buildsList.Add(reader["ForkId"].ToString());
+                                            }
+
+                                            reader.Close();
+                                        }
+
+
+                                    for (int ñ = 0; ñ < buildsList.Count; ñ++)
+                                    {
+                                        int count = 0;
+                                        for (int j = 0; j < buildsList.Count; j++)
+                                        {
+                                            if (buildsList[ñ] == buildsList[j])
+                                            {
+                                                count++;
+                                                if (count > 1)
+                                                {
+                                                    buildsList[j] = buildsList[j] + "_";
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Console.WriteLine($"Founded {buildsList.Count} build" + (buildcount == 1 ? " " : "s"));
+                                    foreach (var build in buildsList)
+                                        Console.WriteLine(build);
+
+            for(int build = 0; build < buildsList.Count; build++)
             {
-                SqliteDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    buildsList.Add(reader["ForkId"].ToString());
-                }
-
-                reader.Close();
+            int VersionId = build + 1;
+            Console.WriteLine($"{VersionId} build {build}");
             }
-            var copy = string.Empty;
+            */
+            #endregion
 
-            for (int c = 0; c < buildsList.Count; c++)
+            GetMaxMin(connection, out var maxID, out var minID);
+
+            int maxID_ = (int)maxID;
+            int minID_ = (int)minID;
+            int numberOfId = maxID_ - minID_;
+
+            for (int j = minID_; j < maxID_ + 1; j++)
             {
+                Console.WriteLine($"Progress: {(double)((j - minID_)/(numberOfId) *100):0.00}%");
 
-                if (buildsList[c].StartsWith("git@github.com"))
+                //Console.ReadKey(true);
+                id = Convert.ToInt32(j);
+
+                // Searching Path
+                int ContentId = id;
+
+                SqliteCommand commandPath = new("SELECT Path FROM ContentManifest WHERE ContentId = @ContentId", connection);
+                commandPath.Parameters.AddWithValue("@ContentId", ContentId);
+
+                // Scanning
+                using (SqliteDataReader reader = commandPath.ExecuteReader())
                 {
-                    buildsList[c] = buildsList[c].Substring(" git@github.com".Length).TrimStart();
-                }
-
-
-
-                int count = 0;
-                for (int j = 0; j < buildsList.Count; j++)
-                {
-
-                    if (buildsList[c] == buildsList[j])
+                    if (reader.Read())
                     {
-                        count++;
-                        if (count > 1)
-                        {
-                            buildsList[j] = buildsList[j] + "_";
-                        }
+                        path = reader.GetString(0);
+                        Console.WriteLine($"Path of ContentId {ContentId}: {path}");
+                        reader.Close();
+                    }
+                    else
+                    {
+                        Console.WriteLine($"No logs for ContentId {ContentId}.");
+                        reader.Close();
+                        continue;
                     }
                 }
-            }
-            Console.WriteLine($"Founded {buildsList.Count} build" + (buildcount == 1 ? " " : "s"));
-            foreach (var build in buildsList)
-                Console.WriteLine(build);
 
-            /*            for(int build = 0; build < buildsList.Count; build++)
-                        {
-                        int VersionId = build + 1;
-                        Console.WriteLine($"{VersionId} build {build}");
-                        }*/
+                string temp = path;
 
-            
-            
-            Console.ReadKey(true);
+                // Creating folder address
+                string result_ = path;
+                int i;
+                int count = 0;
 
-            for(int build = 1; build < buildsList.Count + 1; build++)
-            {
-                GetMaxMin(connection, out var maxID, out var minID, build);
-                Console.WriteLine( $"min - {minID} max - {maxID}");
-                Console.ReadKey(true);
-
-                int maxID_ = (int)maxID;
-                int minID_ = (int)minID;
-
-                for (int j = minID_; j < maxID_ + 1; j++)
+                for (i = result_.Length - 1; i != 0; i--)
                 {
-                    double progress = ((double)j - minID_) / maxID_ * 100;
+                    char c = result_[i];
+                    if (c == '/')
+                        count++;
 
-                    Console.WriteLine($"Progress: {progress:0.00}%");
+                }
+                string str = string.Empty;
+                int c_ = 0;
+                for (i = 0; i < result_.Length; i++)
+                {
 
-                    //Console.ReadKey(true);
-                    id = Convert.ToInt32(j);
+                    if (result_[i] == '/')
+                        c_++;
+                    if (c_ == count)
+                        break;
+                    str += result_[i];
+                }
 
-                    // Searching Path
-                    int ContentId = id;
+                // Creating folder 
 
-                    SqliteCommand commandPath = new("SELECT Path FROM ContentManifest WHERE ContentId = @ContentId AND VersionId = @VersionId", connection);
-                    commandPath.Parameters.AddWithValue("@ContentId", ContentId);
-                    commandPath.Parameters.AddWithValue("@VersionId", build);
+                Directory.CreateDirectory($"Decoded\\{str}");
 
-                    // Scanning
-                    using (SqliteDataReader reader = commandPath.ExecuteReader())
+                // Creating Format
+                result_ = str;
+
+                string result = path.Substring(str.Length + 1);
+
+
+                for (i = temp.Length - 1; i != 0; i--)
+                {
+                    char c = temp[i];
+                    if (c == '.')
+                        break;
+
+                }
+
+                int index = temp.LastIndexOf('.');
+                string format = temp.Substring(index + 1);
+
+
+                // Decompile the file
+                using (SqliteCommand command = new("SELECT Data FROM Content WHERE ID = @id", connection))
+                {
+                    command.Parameters.AddWithValue("@id", id);
+
+                    string compressionLevel_ = string.Empty;
+
+                    SqliteCommand commandPath2 = new("SELECT Compression FROM Content WHERE ID = @id", connection);
+                    commandPath2.Parameters.AddWithValue("@id", id);
+
+                    using (SqliteDataReader reader = commandPath2.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-                            path = reader.GetString(0);
-                            Console.WriteLine($"Path of ContentId {ContentId}: {path}");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"No logs for ContentId {ContentId}.");
+                            compressionLevel_ = reader.GetString(0);
                         }
                         reader.Close();
                     }
 
-                    string temp = path;
-
-                    // Creating folder address
-                    string result_ = path;
-                    int i;
-                    int count = 0;
-
-                    for (i = result_.Length - 1; i != 0; i--)
+                    int compressionLevel;
+                    if (compressionLevel_ == string.Empty || compressionLevel_ == "0")
                     {
-                        char c = result_[i];
-                        if (c == '/')
-                            count++;
-
+                        compressionLevel = 0;
                     }
-                    string str = string.Empty;
-                    int c_ = 0;
-                    for (i = 0; i < result_.Length; i++)
+                    else
                     {
-
-                        if (result_[i] == '/')
-                            c_++;
-                        if (c_ == count)
-                            break;
-                        str += result_[i];
+                        compressionLevel = Convert.ToInt32(compressionLevel_);
                     }
 
-                    // Creating folder
-                    Directory.CreateDirectory($"Decoded\\{buildsList[build - 1]}\\{str}");
 
-                    // Creating Format
-                    result_ = str;
-
-                    string result = path.Substring(str.Length + 1);
-
-
-                    for (i = temp.Length - 1; i != 0; i--)
+                    using (SqliteDataReader reader = command.ExecuteReader())
                     {
-                        char c = temp[i];
-                        if (c == '.')
-                            break;
 
-                    }
-
-                    int index = temp.LastIndexOf('.');
-                    string format = temp.Substring(index + 1);
-
-
-                    // Decompile the file
-                    using (SqliteCommand command = new("SELECT Data FROM Content WHERE ID = @id", connection))
-                    {
-                        command.Parameters.AddWithValue("@id", id);
-
-                        string compressionLevel_ = string.Empty;
-
-                        SqliteCommand commandPath2 = new("SELECT Compression FROM Content WHERE ID = @id", connection);
-                        commandPath2.Parameters.AddWithValue("@id", id);
-
-                        using (SqliteDataReader reader = commandPath2.ExecuteReader())
+                        if (reader.Read())
                         {
-                            if (reader.Read())
+                            if (compressionLevel == 0) // 0 == dec 
                             {
-                                compressionLevel_ = reader.GetString(0);
-                            }
-                            reader.Close();
-                        }
+                                byte[] data = (byte[])reader["Data"];
+                                string fileName = $"Decoded\\{result_}\\{result}";
 
-                        int compressionLevel;
-                        if (compressionLevel_ == string.Empty || compressionLevel_ == "0")
-                        {
-                            compressionLevel = 0;
+                                // Save
+                                File.WriteAllBytes(fileName, data);
+                                //Console.WriteLine($"Successful Blob to " + result);
+                            }
+                            else // 0 < dec
+                            {
+                                byte[] blobData = (byte[])reader["Data"];
+
+                                Stream stream = new MemoryStream(blobData);
+                                File.Delete(result);
+                                using var decompressionStream = new ZstdSharp.DecompressionStream(stream);
+
+                                using var output = File.OpenWrite("temp\\" + result);
+                                decompressionStream.CopyTo(output);
+                                output.Close();
+
+                                // Save
+                                if (!Directory.Exists($"Decoded\\{result_}\\{result}"))
+                                {
+                                    File.Delete($"Decoded\\{result_}\\{result}");
+
+                                }
+
+                                Directory.Move($"temp\\{result}", $"Decoded\\{result_}\\{result}");
+                                //Console.WriteLine($"Successful Blob to {result}");
+                            }
                         }
                         else
                         {
-                            compressionLevel = Convert.ToInt32(compressionLevel_);
+                            Console.WriteLine("Wrong ID! ");
                         }
 
-
-                        using (SqliteDataReader reader = command.ExecuteReader())
-                        {
-
-                            if (reader.Read())
-                            {
-                                if (compressionLevel == 0) // 0 == dec 
-                                {
-                                    byte[] data = (byte[])reader["Data"];
-                                    string fileName = $"Decoded\\{buildsList[build-1]}\\{result_}\\{result}";
-
-                                    // Save
-                                    File.WriteAllBytes(fileName, data);
-                                    //Console.WriteLine($"Successful Blob to " + result);
-                                }
-                                else                                                        // 0 < dec
-                                {
-                                    byte[] blobData = (byte[])reader["Data"];
-
-                                    Stream stream = new MemoryStream(blobData);
-                                    File.Delete(result);
-                                    using var decompressionStream = new ZstdSharp.DecompressionStream(stream);
-
-                                    using var output = File.OpenWrite("temp\\" + result);
-                                    decompressionStream.CopyTo(output);
-                                    output.Close();
-
-                                    // Save
-                                    if (!Directory.Exists($"Decoded\\{buildsList[build-1]}\\{result_}\\{result}"))
-                                    {
-                                        File.Delete($"Decoded\\{buildsList[build-1]}\\{result_}\\{result}");
-
-                                    }
-
-                                    Directory.Move($"temp\\{result}", $"Decoded\\{buildsList[build-1]}\\{result_}\\{result}");
-                                    //Console.WriteLine($"Successful Blob to {result}");
-                                }
-                            }
-                            else
-                            {
-                                Console.WriteLine("Wrong ID! ");
-                            }
-
-                        }
                     }
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR! Error massage: \"{ex.Message}\"");
+        }
+        Directory.Delete("temp", true);
 
-            Directory.Delete("temp", true);
+        Console.WriteLine("Press any key...");
+        Console.ReadKey(true);
 
-            Console.WriteLine("Press any key...");
-            Console.ReadKey(true);
+        return;
+    }
+
+    /// <summary>
+    /// Creates necessary directories for operation.
+    /// </summary>
+    private static void CreateDirs()
+    {
+        if (!Directory.Exists("Decoded"))
+            Directory.CreateDirectory("Decoded");
+
+        if (!Directory.Exists("temp"))
+            Directory.CreateDirectory("temp");
+    }
+
+    /// <summary>
+    /// Retrieves the maximum and minimum ID values from the database.
+    /// </summary>
+    /// <param name="connection">SQLite database connection.</param>
+    /// <param name="MaxID">Maximum ID value.</param>
+    /// <param name="MinID">Minimum ID value.</param>
+    private static void GetMaxMin(SqliteConnection connection, out long MaxID, out long MinID)
+    {
+        MaxID = long.MinValue;
+        MinID = long.MaxValue;
+
+        using (var command = new SqliteCommand("SELECT MAX(ContentId) FROM ContentManifest", connection))
+        {
+            var res = command.ExecuteScalar();
+
+            if (res != DBNull.Value)
+                MaxID = Convert.ToInt64(res);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        private static void CreateDirs()
+        using (var command = new SqliteCommand("SELECT MIN(ContentId) FROM ContentManifest", connection))
         {
-            if (!Directory.Exists("Decoded"))
-                Directory.CreateDirectory("Decoded");
+            var res = command.ExecuteScalar();
 
-            if (!Directory.Exists("temp"))
-                Directory.CreateDirectory("temp");
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        public static string Reverse(string s)
-        {
-            char[] charArray = s.ToCharArray();
-            Array.Reverse(charArray);
-            return new string(charArray);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="connection"></param>
-        /// <param name="MaxID"></param>
-        /// <param name="MinID"></param>
-        private static void GetMaxMin(SqliteConnection connection, out long MaxID, out long MinID, int VersionId)
-        {
-            MaxID = long.MinValue;
-            MinID = long.MaxValue;
-            Console.WriteLine(VersionId);
-            using (var command = new SqliteCommand("SELECT MAX(ContentId) FROM ContentManifest WHERE VersionId = @VersionId", connection))
-            {
-                command.Parameters.AddWithValue("@VersionId", VersionId);
-
-                var res = command.ExecuteScalar();
-                if (res != DBNull.Value)
-                    MaxID = Convert.ToInt64(res);
-
-            }
-
-            using (var command = new SqliteCommand("SELECT MIN(ContentId) FROM ContentManifest WHERE VersionId = @VersionId", connection))
-            {
-                command.Parameters.AddWithValue("@VersionId", VersionId);
-                var res = command.ExecuteScalar();
-
-                if (res != DBNull.Value)
-                    MinID = Convert.ToInt64(res);
-            }
-
+            if (res != DBNull.Value)
+                MinID = Convert.ToInt64(res);
         }
     }
 }
