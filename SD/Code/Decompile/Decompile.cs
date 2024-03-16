@@ -187,7 +187,7 @@ namespace SD.Code.Decompile
                     int i;
                     int count = 0;
 
-                    for (i = result_.Length - 1; i != -1; i--)
+                    for (i = result_.Length - 1; i >= 0; i--)
                     {
                         char c = result_[i];
                         if (c == '/')
@@ -212,8 +212,12 @@ namespace SD.Code.Decompile
                     // Creating Format
                     result_ = str;
 
-                    string result = path.Substring(str.Length + 1);
-
+                    string result = string.Empty;
+                      
+                    if (count == 0)
+                        result = path;
+                    else
+                        result = path.Substring(str.Length + 1);
 
                     for (i = temp.Length - 1; i != 0; i--)
                     {
@@ -266,7 +270,6 @@ namespace SD.Code.Decompile
                                 {
                                     byte[] data = (byte[])reader["Data"];
                                     string fileName = $"Decoded\\{buildsList[build-1]}\\{result_}\\{result}";
-
                                     // Save
                                     File.WriteAllBytes(fileName, data);
                                     //Console.WriteLine($"Successful Blob to " + result);
