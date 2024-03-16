@@ -107,12 +107,14 @@ class Decompile
                     {
                         path = reader.GetString(0);
                         Console.WriteLine($"Path of ContentId {ContentId}: {path}");
+                        reader.Close();
                     }
                     else
                     {
                         Console.WriteLine($"No logs for ContentId {ContentId}.");
+                        reader.Close();
+                        continue;
                     }
-                    reader.Close();
                 }
 
                 string temp = path;
