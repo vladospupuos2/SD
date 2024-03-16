@@ -1,28 +1,26 @@
 using Microsoft.Data.Sqlite;
-using System.Linq;
-using System.Security.Cryptography;
 
 namespace SD.Code.Decompile
 {
-
+    /// <summary>
+    /// The Decompile class represents a tool for decompiling content from a database.
+    /// </summary>
     class Decompile
     {
-
-
         /// <summary>
-        /// 
+        /// Initializes a new instance of the Decompile class.
         /// </summary>
         public Decompile() { }
 
         /// <summary>
-        /// 
+        /// Runs the decompilation process.
         /// </summary>
         public static void Run()
         {
             int id;
 
-            // Seacrhing Path
-            // Nah, maybe i rework this, but its wokring
+            // Searching Path
+            // Nah, maybe i rework this, but its working
             string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Space Station 14");
             string[] folders = Directory.GetDirectories(path);
             Console.WriteLine("Choose launcher");
@@ -69,11 +67,9 @@ namespace SD.Code.Decompile
             long tempCount = 0;
             try
             {
-                using (SqliteCommand command = new("SELECT MAX(Id) FROM ContentVersion", connection))
-                {
-                    tempCount = (long)command.ExecuteScalar();
-                    Console.WriteLine("Version Count: " + tempCount);
-                }
+                using SqliteCommand command = new("SELECT MAX(Id) FROM ContentVersion", connection);
+                tempCount = (long)command.ExecuteScalar();
+                Console.WriteLine("Version Count: " + tempCount);
             }
             catch (Exception ex)
             {
@@ -81,7 +77,7 @@ namespace SD.Code.Decompile
                 Console.ReadKey();
                 return;
             }
-            int buildcount = Convert.ToInt32(tempCount);
+            int buildCount = Convert.ToInt32(tempCount);
 
             //Build Lists
 
@@ -91,7 +87,7 @@ namespace SD.Code.Decompile
             // This is support for Multi-launchers and versions
             // Because this shit try to find table which CAN exist and CAN'T
 
-            using (SqliteCommand command = new SqliteCommand(adrBuilds, connection))
+            using (SqliteCommand command = new(adrBuilds, connection))
             {
                 SqliteDataReader reader = command.ExecuteReader();
 
@@ -106,13 +102,10 @@ namespace SD.Code.Decompile
 
             for (int c = 0; c < buildsList.Count; c++)
             {
-
                 if (buildsList[c].StartsWith("git@github.com"))
                 {
                     buildsList[c] = buildsList[c].Substring(" git@github.com".Length).TrimStart();
                 }
-
-
 
                 int count = 0;
                 for (int j = 0; j < buildsList.Count; j++)
@@ -128,24 +121,24 @@ namespace SD.Code.Decompile
                     }
                 }
             }
-            Console.WriteLine($"Founded {buildsList.Count} build" + (buildcount == 1 ? " " : "s"));
+            Console.WriteLine($"Founded {buildsList.Count} build" + (buildCount == 1 ? " " : "s"));
             foreach (var build in buildsList)
                 Console.WriteLine(build);
 
-            /*            for(int build = 0; build < buildsList.Count; build++)
-                        {
-                        int VersionId = build + 1;
-                        Console.WriteLine($"{VersionId} build {build}");
-                        }*/
+            /*
+            for (int build = 0; build < buildsList.Count; build++)
+            {
+                int VersionId = build + 1;
+                Console.WriteLine($"{VersionId} build {build}");
+            }
+            */
 
-            
-            
             Console.ReadKey(true);
 
-            for(int build = 1; build < buildsList.Count + 1; build++)
+            for (int build = 1; build < buildsList.Count + 1; build++)
             {
                 GetMaxMin(connection, out var maxID, out var minID, build);
-                Console.WriteLine( $"min - {minID} max - {maxID}");
+                Console.WriteLine($"min - {minID} max - {maxID}");
                 Console.ReadKey(true);
 
                 int maxID_ = (int)maxID;
@@ -178,6 +171,7 @@ namespace SD.Code.Decompile
                         else
                         {
                             Console.WriteLine($"No logs for ContentId {ContentId}.");
+                            continue;
                         }
                         reader.Close();
                     }
@@ -194,7 +188,6 @@ namespace SD.Code.Decompile
                         char c = result_[i];
                         if (c == '/')
                             count++;
-
                     }
                     string str = string.Empty;
                     int c_ = 0;
@@ -228,79 +221,74 @@ namespace SD.Code.Decompile
                     int index = temp.LastIndexOf('.');
                     string format = temp.Substring(index + 1);
 
-
                     // Decompile the file
-                    using (SqliteCommand command = new("SELECT Data FROM Content WHERE ID = @id", connection))
+                    using SqliteCommand command = new("SELECT Data FROM Content WHERE ID = @id", connection);
+                    command.Parameters.AddWithValue("@id", id);
+
+                    string compressionLevel_ = string.Empty;
+
+                    SqliteCommand commandPath2 = new("SELECT Compression FROM Content WHERE ID = @id", connection);
+                    commandPath2.Parameters.AddWithValue("@id", id);
+
+                    using (SqliteDataReader reader = commandPath2.ExecuteReader())
                     {
-                        command.Parameters.AddWithValue("@id", id);
-
-                        string compressionLevel_ = string.Empty;
-
-                        SqliteCommand commandPath2 = new("SELECT Compression FROM Content WHERE ID = @id", connection);
-                        commandPath2.Parameters.AddWithValue("@id", id);
-
-                        using (SqliteDataReader reader = commandPath2.ExecuteReader())
+                        if (reader.Read())
                         {
-                            if (reader.Read())
-                            {
-                                compressionLevel_ = reader.GetString(0);
-                            }
-                            reader.Close();
+                            compressionLevel_ = reader.GetString(0);
                         }
+                        reader.Close();
+                    }
 
-                        int compressionLevel;
-                        if (compressionLevel_ == string.Empty || compressionLevel_ == "0")
+                    int compressionLevel;
+                    if (compressionLevel_ == string.Empty || compressionLevel_ == "0")
+                    {
+                        compressionLevel = 0;
+                    }
+                    else
+                    {
+                        compressionLevel = Convert.ToInt32(compressionLevel_);
+                    }
+
+
+                    using (SqliteDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
                         {
-                            compressionLevel = 0;
+                            if (compressionLevel == 0) // 0 == dec 
+                            {
+                                byte[] data = (byte[])reader["Data"];
+                                string fileName = $"Decoded\\{buildsList[build - 1]}\\{result_}\\{result}";
+
+                                // Save
+                                File.WriteAllBytes(fileName, data);
+                                //Console.WriteLine($"Successful Blob to " + result);
+                            }
+                            else // 0 < dec
+                            {
+                                byte[] blobData = (byte[])reader["Data"];
+
+                                Stream stream = new MemoryStream(blobData);
+                                File.Delete(result);
+                                using var decompressionStream = new ZstdSharp.DecompressionStream(stream);
+
+                                using var output = File.OpenWrite("temp\\" + result);
+                                decompressionStream.CopyTo(output);
+                                output.Close();
+
+                                // Save
+                                if (!Directory.Exists($"Decoded\\{buildsList[build - 1]}\\{result_}\\{result}"))
+                                {
+                                    File.Delete($"Decoded\\{buildsList[build - 1]}\\{result_}\\{result}");
+
+                                }
+
+                                Directory.Move($"temp\\{result}", $"Decoded\\{buildsList[build - 1]}\\{result_}\\{result}");
+                                //Console.WriteLine($"Successful Blob to {result}");
+                            }
                         }
                         else
                         {
-                            compressionLevel = Convert.ToInt32(compressionLevel_);
-                        }
-
-
-                        using (SqliteDataReader reader = command.ExecuteReader())
-                        {
-
-                            if (reader.Read())
-                            {
-                                if (compressionLevel == 0) // 0 == dec 
-                                {
-                                    byte[] data = (byte[])reader["Data"];
-                                    string fileName = $"Decoded\\{buildsList[build-1]}\\{result_}\\{result}";
-
-                                    // Save
-                                    File.WriteAllBytes(fileName, data);
-                                    //Console.WriteLine($"Successful Blob to " + result);
-                                }
-                                else                                                        // 0 < dec
-                                {
-                                    byte[] blobData = (byte[])reader["Data"];
-
-                                    Stream stream = new MemoryStream(blobData);
-                                    File.Delete(result);
-                                    using var decompressionStream = new ZstdSharp.DecompressionStream(stream);
-
-                                    using var output = File.OpenWrite("temp\\" + result);
-                                    decompressionStream.CopyTo(output);
-                                    output.Close();
-
-                                    // Save
-                                    if (!Directory.Exists($"Decoded\\{buildsList[build-1]}\\{result_}\\{result}"))
-                                    {
-                                        File.Delete($"Decoded\\{buildsList[build-1]}\\{result_}\\{result}");
-
-                                    }
-
-                                    Directory.Move($"temp\\{result}", $"Decoded\\{buildsList[build-1]}\\{result_}\\{result}");
-                                    //Console.WriteLine($"Successful Blob to {result}");
-                                }
-                            }
-                            else
-                            {
-                                Console.WriteLine("Wrong ID! ");
-                            }
-
+                            Console.WriteLine("Wrong ID! ");
                         }
                     }
                 }
@@ -313,7 +301,7 @@ namespace SD.Code.Decompile
         }
 
         /// <summary>
-        /// 
+        /// Creates the necessary directories for decompilation.
         /// </summary>
         private static void CreateDirs()
         {
@@ -323,9 +311,12 @@ namespace SD.Code.Decompile
             if (!Directory.Exists("temp"))
                 Directory.CreateDirectory("temp");
         }
+
         /// <summary>
-        /// 
+        /// Returns a string that is the reverse of the original.
         /// </summary>
+        /// <param name="s">The original string.</param>
+        /// <returns>The reversed string.</returns>
         public static string Reverse(string s)
         {
             char[] charArray = s.ToCharArray();
@@ -334,11 +325,12 @@ namespace SD.Code.Decompile
         }
 
         /// <summary>
-        /// 
+        /// Retrieves the maximum and minimum content identifiers for the specified version.
         /// </summary>
-        /// <param name="connection"></param>
-        /// <param name="MaxID"></param>
-        /// <param name="MinID"></param>
+        /// <param name="connection">The connection to the database.</param>
+        /// <param name="MaxID">The maximum identifier.</param>
+        /// <param name="MinID">The minimum identifier.</param>
+        /// <param name="VersionId">The version identifier.</param>
         private static void GetMaxMin(SqliteConnection connection, out long MaxID, out long MinID, int VersionId)
         {
             MaxID = long.MinValue;
