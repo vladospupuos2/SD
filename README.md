@@ -1,7 +1,7 @@
 # Syndi-Decoder 1.2.0
 ######  RU:
 
->Программа написана Vladospupuos и NekoDar!
+>Программа написана [Vladospupuos](https://github.com/vladospupuos2) и [The many faced demon](https://github.com/themanyfaceddemon)!
 >Мы не несём ответственность за использование программы во вред другим проектам!
 >Программа служит в ознакомительных целях!
 >Space Station 14 это ремейк SS13, который работает на собственном движке Robust Toolbox, 
@@ -22,7 +22,7 @@ ___
 
 ###### ENG:
 
->The program was written by Vladospupuos and NekoDar!
+>The program was written by [Vladospupuos](https://github.com/vladospupuos2) and [The many faced demon](https://github.com/themanyfaceddemon)!
 >We am not responsible for using the program to the detriment of other projects!
 >The program is for informational purposes only!
 >Space Station 14 is a remake of SS13, which runs on its own Robust Toolbox engine,
