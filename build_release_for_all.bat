@@ -24,5 +24,4 @@ cd /d "%PDIR%/SD/bin/Release/net6.0/"
 7z a "win-arm.zip" "win-arm"
 7z a "win-arm64.zip" "win-arm64"
 
-pause
 exit
