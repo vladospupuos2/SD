@@ -1,4 +1,4 @@
-# Syndi-Decoder 1.1.3
+# Syndi-Decoder 1.2.0
 ######  RU:
 
 >Программа написана Vladospupuos и NekoDar!
