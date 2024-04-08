@@ -115,6 +115,7 @@ class Decompile
                 }
             }
         }
+
         Console.WriteLine($"Founded {buildsList.Count} build" + (buildcount == 1 ? " " : "s"));
         for (int i = 0; i < buildsList.Count; i++)
             Console.WriteLine(buildsList[i] + buildId[i]);
@@ -172,14 +173,17 @@ class Decompile
                     if (c == '/')
                         count++;
                 }
+
                 string str = string.Empty;
                 int c_ = 0;
                 for (i = 0; i < result_.Length; i++)
                 {
                     if (result_[i] == '/')
                         c_++;
+
                     if (c_ == count)
                         break;
+
                     str += result_[i];
                 }
 
@@ -241,6 +245,7 @@ class Decompile
                         {
                             byte[] data = (byte[])reader["Data"];
                             string fileName = $"Decoded\\{buildsList[build - 1]}\\{result_}\\{result}";
+
                             // Save
                             File.WriteAllBytes(fileName, data);
                         }
@@ -315,7 +320,6 @@ class Decompile
             var res = command.ExecuteScalar();
             if (res != DBNull.Value)
                 MaxID = Convert.ToInt64(res);
-
         }
 
         using (var command = new SqliteCommand("SELECT MIN(ContentId) FROM ContentManifest WHERE VersionId = @VersionId", connection))
