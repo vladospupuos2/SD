@@ -9,15 +9,48 @@
 >Все расширения DLL тоже находятся в открытом доступе!
 
 ## Инструкция 
-1) Для более удобной работы, удалите весь серверный контент из лаунчера
-2) Зайдите на сервер, и как вы загрузитесь в меню, можете выйти
+**Для более удобной работы, удалите весь серверный контент из лаунчера.**
 
-(Данные 2 пункта не является более обязательными, но для отзывчивой работы программы, я всё же рекомендую их сделать)
+Первым делом, зайдите на сервер, и как вы загрузитесь в меню, можете выйти.
 
-3) Заходим в программу SD.exe и вводим пункт 1.
-4) Выбираем из какого лаунчера будем доставать файлы.
-5) Смотрим на результат, и если всё успешно, нажимаем любую клавишу и выходим из программы.
-6) В папке "Decoded" будут ждать файлы
+**Первая функция** отвечает за выгруз клиентской составляющей из дата базы с контентом (*спрайты, прототипы, звуки и пару DLL файлов*).
+Нажимаете на неё и ждете завершения.
+В папке с программой появится папка **"Decoded"** — там вас будет ждать папка с контентом.
+
+**Вторая функция** отвечает за загрузку файлов в клиентскую базу.
+* Создайте папку **"Upload"** в дериктории с программой.
+* Вставьте в папку контент рассортированный строго как он выгружался.
+> Т.е. если вы хотите поменять стандартный серый комбенизон, вам в папке **"Upload"**, нужно создать дерикторию
+```
+Textures\Clothing\Uniforms\Jumpsuit\Color\grey.rsi
+```
+* Вставить туда нужные вам спрайты
+```
+equipped-INNERCLOTHING.png
+icon.png
+```
+* Переходим в программу.
+---
+
+**Выберите один из режимов:**
+
+##### Загрузка одного файла
+
+* Вписываете путь к файлу с самим файлом
+```
+   Textures\Clothing\Uniforms\Jumpsuit\Color\grey.rsi\equipped-INNERCLOTHING.png
+ ```
+* Ждем завершения работы.
+
+##### Загрузка папки:
+* Вписываете путь к папке с файлами.
+```
+   Textures\Clothing\Uniforms\Jumpsuit\Color\grey.rsi
+```
+* Ждем завершения работы.
+
+
+
 ___
 
 ###### ENG:
@@ -30,12 +63,42 @@ ___
 >All DLL extensions are also publicly available!
 
 ## Instructions
-1) For a more convenient experience, remove all server content from the launcher
-2) Login to the server, and once you have loaded into the menu, you can exit
+**For a more convenient experience, remove all server content from the launcher.**
 
-(These 2 points are no longer mandatory, but for responsive operation of the program, I still recommend doing them)
+First of all, go to the server, and once you have loaded into the menu, you can exit.
 
-3) Go to the SD.exe program and enter point 1.
-4) Select from which launcher we will get the files.
-5) We look at the result, and if everything is successful, press any key and exit the program.
-6) Files will be waiting in the “Decoded” folder
+**The first function** is responsible for unloading the client component from the data base with content (*sprites, prototypes, sounds and a couple of DLL files*).
+Click on it and wait for completion.
+The **"Decoded"** folder will appear in the program folder - a folder with content will be waiting for you there.
+
+**The second function** is responsible for uploading files to the client database.
+* Create a folder **"Upload"** in the directory with the program.
+* Insert the content into the folder, sorted strictly as it was uploaded.
+> That is if you want to change the standard gray overalls, you need to create a directory in the **"Upload"** folder
+```
+Textures\Clothing\Uniforms\Jumpsuit\Color\grey.rsi
+```
+* Insert the sprites you need there
+```
+equipped-INNERCLOTHING.png
+icon.png
+```
+* Go to the program.
+---
+
+**Select one of the modes:**
+
+##### Uploading a single file
+
+* Enter the path to the file with the file itself
+```
+    Textures\Clothing\Uniforms\Jumpsuit\Color\grey.rsi\equipped-INNERCLOTHING.png
+  ```
+* We are waiting for the work to complete.
+
+##### Loading folder:
+* Enter the path to the folder with the files.
+```
+    Textures\Clothing\Uniforms\Jumpsuit\Color\grey.rsi
+```
+* We are waiting for the work to complete.
