@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection.Emit;
+using System.Xml.Linq;
 using ZstdSharp;
 using ZstdSharp.Unsafe;
 
@@ -67,94 +68,228 @@ class Compiler
             return;
         }
 
+        Console.WriteLine("Select Mode:\n1) Upload single file\n2) Upload folder ");
+
+        ConsoleKeyInfo modeChoice;
+        int Mchoice = -1;
+        do
+        {
+            modeChoice = Console.ReadKey(true);
+
+            if (char.IsDigit(modeChoice.KeyChar))
+                Mchoice = int.Parse(modeChoice.KeyChar.ToString());
+        }
+        while (Mchoice <= 0 || Mchoice >= 3);
+
         Console.WriteLine("Enter filename: ");
         string input = string.Empty;
         input = Console.ReadLine();
-
-        if(!File.Exists(Path.Combine(uploadFolder, input)))
+        input = input.Replace('\\', '/');
+        List<string> fileNames = new List<string>();
+        if (Mchoice == 2)
         {
-            Console.WriteLine("File not found");
-            Console.ReadKey();
-            return;
-        }
-        string output = "UpFile";
-
-        using SqliteConnection connection = new($"Data Source={connectionString}");
-        connection.Open();
-
-        List<int> contentIds = GetContentIdsByPath(connection, input);
-
-        if (contentIds.Count > 0)
-        {
-            Console.WriteLine($"Found {contentIds.Count}:");
-            foreach (int contentId in contentIds)
+            Console.WriteLine();
+            if (Directory.Exists(Path.Combine(uploadFolder, input)))
             {
-                Console.WriteLine($"ContentId: {contentId}");
+
+                string[] files = Directory.GetFiles(Path.Combine(uploadFolder, input));
+
+                foreach (string file in files)
+                {
+                    fileNames.Add(Path.GetFileName(file));
+                }
+
+
+                foreach (string fileName in fileNames)
+                {
+                    Console.WriteLine(fileName);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Folder not found.");
+                Console.ReadKey();
+                return;
             }
         }
         else
         {
-            Console.WriteLine("Not found.");
-            Console.ReadKey();
-            return;
+            fileNames.Add(input);
         }
 
+            char lastChar = input[input.Length - 1];
 
-        // TODO: Make folder upload system
-
-        long compressedFileSize;
-        int compressionLevel; 
-        foreach (int contentId in contentIds)
-        {
-            using (SqliteCommand command = new("SELECT Data FROM Content WHERE ID = @contentId", connection))
+            if (lastChar == '\\' || lastChar == '/')
             {
-
-                command.Parameters.AddWithValue("@contentId", contentId);
-                string compressionLevel_ = string.Empty;
-
-                SqliteCommand commandPath2 = new("SELECT Compression FROM Content WHERE ID = @contentId", connection);
-                commandPath2.Parameters.AddWithValue("@contentId", contentId);
-
-                using (SqliteDataReader reader = commandPath2.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        compressionLevel_ = reader.GetString(0);
-                    }
-                    reader.Close();
-                }
-                if (compressionLevel_ == string.Empty || compressionLevel_ == "0")
-                {
-                    compressionLevel = 0;
-                }
-                else
-                {
-                    compressionLevel = Convert.ToInt32(compressionLevel_);
-                }
-
-                CompressDataToFile(Path.Combine(uploadFolder, input), output, compressionLevel);
-                compressedFileSize = new FileInfo(Path.Combine(uploadFolder, input)).Length;
-
-                string sql = "UPDATE Content SET data = @imageData, Size = @size WHERE ID = @id";
-
-                using (SqliteCommand command2 = new SqliteCommand(sql, connection))
-                {
-                    byte[] FileData = File.ReadAllBytes(output);
-                    command2.Parameters.AddWithValue("@imageData", FileData);
-                    command2.Parameters.AddWithValue("@size", compressedFileSize);
-                    command2.Parameters.AddWithValue("@id", contentId);
-                    command2.ExecuteNonQuery();
-                }
-
+                input = input.Substring(0, input.Length - 1);
             }
 
+            string output = "UpFile";
 
+        Console.WriteLine();
+
+        using SqliteConnection connection = new($"Data Source={connectionString}");
+        connection.Open();
+
+        foreach (string file in fileNames)
+        {
+            List<int> contentIds;
+            if (Mchoice == 2)
+                contentIds = GetContentIdsByPath(connection, input + "/" + file);
+            else
+                contentIds = GetContentIdsByPath(connection, input);
+
+            if (contentIds.Count > 0)
+            {
+                Console.WriteLine($"Found {contentIds.Count}:");
+                foreach (int contentId in contentIds)
+                {
+                    Console.WriteLine($"ContentId: {contentId}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Not found.");
+                Console.ReadKey();
+                return;
+            }
+
+            if (Mchoice == 1)
+            {
+                long compressedFileSize;
+                int compressionLevel;
+                foreach (int contentId in contentIds)
+                {
+                    using (SqliteCommand command = new("SELECT Data FROM Content WHERE ID = @contentId", connection))
+                    {
+
+                        command.Parameters.AddWithValue("@contentId", contentId);
+                        string compressionLevel_ = string.Empty;
+
+                        SqliteCommand commandPath2 = new("SELECT Compression FROM Content WHERE ID = @contentId", connection);
+                        commandPath2.Parameters.AddWithValue("@contentId", contentId);
+
+                        using (SqliteDataReader reader = commandPath2.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                compressionLevel_ = reader.GetString(0);
+                            }
+                            reader.Close();
+                        }
+                        if (compressionLevel_ == string.Empty || compressionLevel_ == "0")
+                        {
+                            compressionLevel = 0;
+                        }
+                        else
+                        {
+                            compressionLevel = Convert.ToInt32(compressionLevel_);
+                            CompressDataToFile(Path.Combine(uploadFolder, input), output, compressionLevel);
+
+                        }
+
+                        
+                        compressedFileSize = new FileInfo(Path.Combine(uploadFolder, input)).Length;
+
+                        string sql = "UPDATE Content SET data = @imageData, Size = @size WHERE ID = @id";
+
+                        using (SqliteCommand command2 = new SqliteCommand(sql, connection))
+                        {
+                            byte[] FileData;
+                            if (compressionLevel != 0)
+                                FileData = File.ReadAllBytes(output);
+                            else
+                                FileData = File.ReadAllBytes("Upload\\" + input);
+                            command2.Parameters.AddWithValue("@imageData", FileData);
+                            command2.Parameters.AddWithValue("@size", compressedFileSize);
+                            command2.Parameters.AddWithValue("@id", contentId);
+                            command2.ExecuteNonQuery();
+                        }
+
+                    }
+
+
+                }
+                Console.WriteLine("DONE!");
+                connection.Close();
+                File.Delete(output);
+
+            }
+            else
+            {
+
+                long compressedFileSize;
+                int compressionLevel;
+                foreach (int contentId in contentIds)
+                {
+
+                    using (SqliteCommand command = new("SELECT Data FROM Content WHERE ID = @contentId", connection))
+                    {
+
+                        command.Parameters.AddWithValue("@contentId", contentId);
+                        string compressionLevel_ = string.Empty;
+
+                        SqliteCommand commandPath2 = new("SELECT Compression FROM Content WHERE ID = @contentId", connection);
+                        commandPath2.Parameters.AddWithValue("@contentId", contentId);
+
+                        bool noDec = false;
+
+                        using (SqliteDataReader reader = commandPath2.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                compressionLevel_ = reader.GetString(0);
+                            }
+                            reader.Close();
+                        }
+                        if (compressionLevel_ == string.Empty || compressionLevel_ == "0")
+                        {
+                            compressionLevel = 0;
+                        }
+                        else
+                        {
+                            compressionLevel = Convert.ToInt32(compressionLevel_);
+                        }
+                        if (compressionLevel != 0)
+                        {
+                            File.Create(file + ".bin");
+                            CompressDataToFile(Path.Combine(uploadFolder, input, file), file + ".bin", compressionLevel);
+                        }
+                        else
+                        {
+                            noDec = true;
+                        }
+
+                        compressedFileSize = new FileInfo(Path.Combine(uploadFolder, input, file)).Length;
+
+                        string sql = "UPDATE Content SET data = @imageData, Size = @size WHERE ID = @id";
+
+                        using (SqliteCommand command2 = new SqliteCommand(sql, connection))
+                        {
+                            byte[] FileData;
+                            if (!noDec)
+                                FileData = File.ReadAllBytes(file + ".bin");
+                            else
+                                FileData = File.ReadAllBytes(Path.Combine(uploadFolder, input, file));
+
+                            command2.Parameters.AddWithValue("@imageData", FileData);
+                            command2.Parameters.AddWithValue("@size", compressedFileSize);
+                            command2.Parameters.AddWithValue("@id", contentId);
+                            command2.ExecuteNonQuery();
+                            if (noDec)
+                                File.Delete(file + ".bin");
+
+                        }
+
+
+                    }
+                }
+                Console.WriteLine("DONE!");
+            }
+              
         }
-        Console.WriteLine("DONE!");
         Console.ReadKey();
         connection.Close();
-        File.Delete(output);
-
     }
 
     public static string Reverse(string s)
@@ -222,7 +357,8 @@ class Compiler
                 while (reader.Read())
                 {
                     string pathFromDatabase = reader.GetString(1);
-                    pathFromDatabase = Trim(pathFromDatabase);
+                    //Console.WriteLine(pathFromDatabase);
+                    //pathFromDatabase = Trim(pathFromDatabase);
 
 
                     if (string.Equals(pathFromDatabase, userInputPath, StringComparison.OrdinalIgnoreCase))
@@ -230,8 +366,10 @@ class Compiler
                         contentIds.Add(reader.GetInt32(0));
                     }
                 }
+                reader.Close();
             }
         }
+        
 
         return contentIds;
     }
