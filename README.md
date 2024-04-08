@@ -14,8 +14,10 @@
 Первым делом, зайдите на сервер, и как вы загрузитесь в меню, можете выйти.
 
 **Первая функция** отвечает за выгруз клиентской составляющей из дата базы с контентом (*спрайты, прототипы, звуки и пару DLL файлов*).
-Нажимаете на неё и ждете завершения.
-В папке с программой появится папка **"Decoded"** — там вас будет ждать папка с контентом.
+
+* Нажимаете на неё и ждете завершения.
+
+* В папке с программой появится папка **"Decoded"** — там вас будет ждать папка с контентом.
 
 **Вторая функция** отвечает за загрузку файлов в клиентскую базу.
 * Создайте папку **"Upload"** в дериктории с программой.
@@ -68,8 +70,10 @@ ___
 First of all, go to the server, and once you have loaded into the menu, you can exit.
 
 **The first function** is responsible for unloading the client component from the data base with content (*sprites, prototypes, sounds and a couple of DLL files*).
-Click on it and wait for completion.
-The **"Decoded"** folder will appear in the program folder - a folder with content will be waiting for you there.
+
+* Click on it and wait for completion.
+
+* A **"Decoded"** folder will appear in the program folder - a folder with content will be waiting for you there.
 
 **The second function** is responsible for uploading files to the client database.
 * Create a folder **"Upload"** in the directory with the program.
