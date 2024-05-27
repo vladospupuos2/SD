@@ -18,14 +18,7 @@ class Decompile
         int countFolders = 1;
         foreach (string folder in folders)
         {
-            var temp = string.Empty;
-            for (int i = folder.Length - 1; i > 0; i--)
-            {
-                if (folder[i] == '\\')
-                    break;
-                temp += folder[i];
-            }
-            temp = Reverse(temp);
+            string temp = Path.GetFileName(folder);
 
             Console.WriteLine($"{countFolders}) {temp}");
             countFolders++;
