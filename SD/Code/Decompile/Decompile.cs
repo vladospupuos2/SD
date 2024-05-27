@@ -131,7 +131,7 @@ class Decompile
 
             for (int j = minID_; j < maxID_ + 1; j++)
             {
-                double progress = ((double)j - minID_) / maxID_ * 100;
+                double progress = ((double)j - minID_) / (maxID_ - minID_) * 100;
 
                 Console.WriteLine($"Progress: {progress:0.00}%");
 
