@@ -258,8 +258,8 @@ class Decompile
                             output.Close();
 
                             // Save
-                            if (!Directory.Exists($"Decoded\\{buildsList[build - 1]}\\{result_}\\{result}"))
-                                File.Delete($"Decoded\\{buildsList[build - 1]}\\{result_}\\{result}");
+                            if (Directory.Exists($"Decoded\\{buildsList[build - 1]}\\{result_}\\{result}"))
+                                Directory.Delete($"Decoded\\{buildsList[build - 1]}\\{result_}\\{result}", true);
 
                             Directory.Move($"temp\\{result}", $"Decoded\\{buildsList[build - 1]}\\{result_}\\{result}");
                         }
