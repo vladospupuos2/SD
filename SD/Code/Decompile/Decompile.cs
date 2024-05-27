@@ -32,6 +32,9 @@ class Decompile
 
             if (char.IsDigit(launcherChoice.KeyChar))
                 choice = int.Parse(launcherChoice.KeyChar.ToString());
+
+            if (choice <= 0 || choice >= countFolders)
+                Console.WriteLine("Wrong choice, try again.");
         }
         while (choice <= 0 || choice >= countFolders);
 
