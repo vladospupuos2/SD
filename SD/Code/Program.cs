@@ -26,7 +26,7 @@ class Program
             switch (choice)
             {
                 case 1:
-                    Decompile.Run();
+                    Decompiler.Run();
                     break;
 
                 case 2:
