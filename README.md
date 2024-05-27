@@ -1,4 +1,4 @@
-# Syndi-Decoder 1.2.0
+# Syndi-Decoder 1.2.1
 ######  RU:
 
 >Программа написана [Vladospupuos](https://github.com/vladospupuos2) и [The many faced demon](https://github.com/themanyfaceddemon)!
